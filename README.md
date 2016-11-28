@@ -9,5 +9,9 @@ Jupyter notebooks for Monte-Carlo simulation of SSPALS lifetime spectra.
 
 The example notebooks import tools from ./notebooks/mc_poisitronium.py
 
+## about
+
+see (https://arxiv.org/abs/1609.04993)[https://arxiv.org/abs/1609.04993]
+
 ## testing
 13/09/2016 - Python 3.5.1 (Anaconda, 64-bit), IPython 4.1.2 , Windows 7.
