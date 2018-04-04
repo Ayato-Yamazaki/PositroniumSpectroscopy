@@ -9,6 +9,53 @@ from scipy.constants import m_e, k, c
 from scipy.special import erf
 from positronium.constants import lifetime_oPs
 
+class PhaseSpace(object):
+    """ describe the position of a particle in phase space"""
+    def __init__(self, time, position, velocity):
+        self.time = time
+        self.position = position
+        self.velocity = velocity
+
+    @property
+    def t(self):
+        """alias for time"""
+        return self.time
+        
+    @property  
+    def x(self):
+        """ x position"""
+        return self.position[0]
+
+    @property  
+    def y(self):
+        """ y position"""
+        return self.position[1]
+
+    @property  
+    def z(self):
+        """ z position"""
+        return self.position[2]
+
+    @property  
+    def vx(self):
+        """ velocity component along x"""
+        return self.velocity[0]
+
+    @property  
+    def vy(self):
+        """ velocity component along y"""
+        return self.velocity[1]
+
+    @property  
+    def vz(self):
+        """ velocity component along z"""
+        return self.velocity[2]
+    
+    def asdict(self):
+        """ flatten to dictionary """
+        return dict(zip(["t", "x", "y", "z", "vx", "vy", "vz"],
+                        [self.t, self.x, self.y, self.z, self.vx, self.vy, self.vz]))
+
 class Laser(object):
     """ A laser pulse with a flat rectangular intensity profile.
     """
@@ -144,7 +191,7 @@ class Spectroscopy(object):
         # kwargs
         ex_eff = kwargs.get('ex_eff', 0.5)
         life_oPs = kwargs.get('lifetime_oPs', lifetime_oPs)
-        life_ryd = kwargs.get('lifetime_Rydberg', 2e-6)
+        life_ryd = kwargs.get('lifetime_Rydberg', 4e-6)
         # find overlap and randomly select those excited
         df = df.copy()
         Ps = df[df['status'] == 'oPs'].index
@@ -207,6 +254,81 @@ class Tube(object):
         df.loc[hit_wall] = update_df(df.loc[hit_wall])
         return  df
 
+class Tube2(object):
+    """ simulate interaction with a tube positioned away from the source.
+    """
+    def __init__(self, radius=0.02, distance=0.025):
+        self.radius = radius
+        self.distance = distance
+
+    def tof(self, df):
+        """ find the time it takes each atom to hit the wall
+
+            http://mathworld.wolfram.com/Circle-LineIntersection.html
+        """
+        x2 = df['x0'] + df['vx']
+        y2 = df['y0'] + df['vy']
+        drsq = df['vx']**2.0 + df['vy']**2.0
+        dd = df['x0'] * y2 - x2 * df['y0']
+        sgn = np.where(df['vy'] < 0.0, -1.0, 1.0)
+        x_a = (dd * df['vy'] + sgn * df['vx'] * \
+               (self.radius**2.0 * drsq - dd**2.0)**0.5) / \
+               drsq
+        x_b = (dd * df['vy'] - sgn * df['vx'] * \
+               (self.radius**2.0 * drsq - dd**2.0)**0.5) / \
+               drsq
+        tof_a = (x_a - df['x0']) / df['vx']
+        tof_b = (x_b - df['x0']) / df['vx']
+        # cannot hit tube until it has reached a minimum distance z from the converter
+        tof_z = self.distance / df['vz']
+        tof_ = np.max(np.array([tof_a, tof_b, tof_z]), axis=0)
+        return tof_
+
+    def hit(self, df, status='wall'):
+        """ modify df to include collisions with the wall
+        """
+        df = df.copy()
+        # drop anything which starts off outside the tube
+        df = df[(df['x0']**2.0 + df['y0']**2.0) < self.radius**2.0]
+        df = df[df['vz'] > 0]
+        # find which subsequently hit the wall
+        hit_wall = df[df['life'] > self.tof(df)].index
+        # find the time-of-flight to the wall
+        df.loc[hit_wall, 'status'] = status
+        df.loc[hit_wall, 'life'] = self.tof(df.loc[hit_wall])
+        df.loc[hit_wall, 'time of death'] = df.loc[hit_wall, 't0'] + df.loc[hit_wall, 'life']
+        # update final position
+        df.loc[hit_wall] = update_df(df.loc[hit_wall])
+        return  df
+
+class Grid(object):
+    """ simulate interaction with the surroundings
+    """
+    def __init__(self, distance=0.01):
+        self.distance = distance
+
+    def tof(self, df):
+        """ find the time it takes each atom to hit the grid
+        """
+        tof = self.distance / df['vz']
+        return tof
+
+    def hit(self, df, eff=0.1, eff_ryd=1.0, status='grid'):
+        """ modify df to include collisions with the wall
+        """
+        df = df.copy()
+        num = len(df.index)
+        # find which hit the grid
+        hit_grid = df[(df.status == 'oPs') & (df['z'] > self.distance) & (np.random.random(num) < eff)].index
+        hit_grid = hit_grid.append(df[(df.status == 'Rydberg') & (df['z'] > self.distance) & (np.random.random(num) < eff_ryd)].index)
+        #update
+        df.loc[hit_grid, 'status'] = status
+        df.loc[hit_grid, 'life'] = self.tof(df.loc[hit_grid])
+        df.loc[hit_grid, 'time of death'] = df.loc[hit_grid, 't0'] + df.loc[hit_grid, 'life']
+        # update final position
+        df.loc[hit_grid] = update_df(df.loc[hit_grid])
+        return  df
+
 def update_df(df):
     """ update final position """
     df['x'] = df['x0'] + df['life'] * df['vx']
@@ -214,7 +336,7 @@ def update_df(df):
     df['z'] = df['z0'] + df['life'] * df['vz']
     return df
 
-def Ps_converter(n_positrons, sigma_t=2e-9, sigma_x=0.002, eff=0.3, T=600):
+def Ps_converter(n_positrons, sigma_t=2e-9, sigma_x=0.002, eff=0.25, T=600):
     """ simulate positron conversion to positronium """
     n_positrons = int(n_positrons)
     # pandas DataFrame
@@ -273,16 +395,10 @@ def fluence(df, laser):
     else:
         pass
 
-def detector(time, tau=1.0E-8):
+def detector(time, tau=8e-9):
     """ detector time response"""
     return np.piecewise(time, [time < 0, time >= 0],
                         [0, lambda time: np.exp(-time/tau) / tau])
-
-def solid_angle(z_vals, a=0.03):
-    """ approximate the solid angle coverage as a function of z using 1/((z/a)^2 + 1)
-        where a is the distance that the solid angle is half of that at z=0.
-    """
-    return np.power(np.divide(z_vals, a)**2.0 + 1.0, -1.0)
 
 # histograms
 
