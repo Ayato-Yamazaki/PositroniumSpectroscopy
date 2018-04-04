@@ -290,9 +290,9 @@ class Tube2(object):
         df = df.copy()
         # drop anything which starts off outside the tube
         df = df[(df['x0']**2.0 + df['y0']**2.0) < self.radius**2.0]
-        df = df[df['vz'] > 0]
+        cut = df[df['vz'] > 0].index
         # find which subsequently hit the wall
-        hit_wall = df[df['life'] > self.tof(df)].index
+        hit_wall = df.loc[cut][df.loc[cut, 'life'] > self.tof(df.loc[cut])].index
         # find the time-of-flight to the wall
         df.loc[hit_wall, 'status'] = status
         df.loc[hit_wall, 'life'] = self.tof(df.loc[hit_wall])
