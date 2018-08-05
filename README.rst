@@ -1,13 +1,15 @@
-# mc_sspals
+mc_sspals
+=========
+
 Jupyter notebooks for Monte-Carlo simulation of SSPALS lifetime spectra.
 
-[![DOI](https://zenodo.org/badge/68219730.svg)](https://zenodo.org/badge/latestdoi/68219730)
-
-## Requires
+Requires
+--------
 
 [scipy](https://www.scipy.org/), [numpy](http://www.numpy.org/), [pandas](http://pandas.pydata.org/), [matplotlib](http://matplotlib.org/), [seaborn](https://stanford.edu/~mwaskom/software/seaborn/), [tqdm](https://pypi.python.org/pypi/tqdm), [sspals](https://pypi.python.org/pypi/sspals), and [positronium](https://pypi.python.org/pypi/positronium).
 
-## Install
+Install
+-------
 
 .. code-block:: bash
 
@@ -15,6 +17,7 @@ Jupyter notebooks for Monte-Carlo simulation of SSPALS lifetime spectra.
    cd ./mc_sspals
    python setup.py install
 
-## Usage
+Usage
+-----
 
 See notebooks.
