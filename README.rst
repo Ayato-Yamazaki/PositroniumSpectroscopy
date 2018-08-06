@@ -7,6 +7,7 @@ Install
 -------
 
 python: 3.5+
+
 requires: scipy, numpy, pandas, matplotlib, seaborn, sspals and positronium.
 
 .. code-block:: bash
