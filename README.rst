@@ -1,6 +1,9 @@
 mc_sspals
 =========
 
+.. image:: https://zenodo.org/badge/68219730.svg
+   :target: https://zenodo.org/badge/latestdoi/68219730
+
 Jupyter notebooks for Monte-Carlo simulation of SSPALS lifetime spectra.
 
 Install
