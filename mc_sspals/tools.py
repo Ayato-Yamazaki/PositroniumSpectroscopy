@@ -2,7 +2,8 @@
 """ Created on Sat Jul 14 09:43:34 2018
     @author: adam
 
-    functions:
+    Functions
+    ---------
         gaussian(x, sigma)
         
         detector(t, kappa)

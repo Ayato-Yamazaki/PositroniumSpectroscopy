@@ -67,8 +67,8 @@ class Chamber(object):
         tof_b = (x_b - df['xi']) / df['vx']
         # cannot hit tube until it has reached a minimum distance z from the converter
         tof_z = self.distance / df['vz']
-        tof_ = np.max(np.array([tof_a, tof_b, tof_z]), axis=0)
-        return  pd.Series(tof_, index=df.index)
+        _tof = np.max(np.array([tof_a, tof_b, tof_z]), axis=0)
+        return  pd.Series(_tof, index=df.index)
 
     def hit(self, df, get_tof=False):
         """ Which particles hit the chamber in their lifetime?
@@ -133,8 +133,8 @@ class Grid(object):
             -------
             pandas.Series
         """
-        tof = self.distance / df['vz']
-        return tof
+        _tof = self.distance / df['vz']
+        return _tof
     
     def hit(self, df, get_tof=False):
         """ Which particles hit the grid in their lifetime?

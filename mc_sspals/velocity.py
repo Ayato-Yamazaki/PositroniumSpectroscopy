@@ -3,13 +3,20 @@
     Created on Sat Jul 14 09:40:39 2018
     @author: adam
 
-    functions:
+    Functions
+    ---------
         fwhm_w0(T, w0)
+        
         vbar(T)
+        
         mb(v, T)
+        
         mbb(v, T)
+        
         mbb_cdf(x)
+        
         mc_mb(num, T)
+        
         mc_mbb(num, T)
 """
 from math import pi

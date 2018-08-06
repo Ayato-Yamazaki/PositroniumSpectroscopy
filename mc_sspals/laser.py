@@ -235,11 +235,11 @@ def doppler(df, laser, transition):
     """
     # Doppler shifted wavelength
     if laser.retro:
-        wl_ = transition.wavelength * (1.0 - df.vx / c)
+        _wl = transition.wavelength * (1.0 - df.vx / c)
     else:
-        wl_ = transition.wavelength * (1.0 + df.vx / c)
+        _wl = transition.wavelength * (1.0 + df.vx / c)
     # wavelength overlap (assumes linewidth << laser bandwidth)
-    dop = pd.Series(laser.lineshape(wl_), name='Doppler') * transition.delta_wl
+    dop = pd.Series(laser.lineshape(_wl), name='Doppler') * transition.delta_wl
     return dop.dropna()
 
 def overlap(df, laser, transition):

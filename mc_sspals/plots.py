@@ -2,7 +2,8 @@
 """ Created on Sat Jul 14 09:24:12 2018
     @author: adam
 
-    functions:
+    Functions
+    ---------
         bksub()       
 """
 import matplotlib.pyplot as plt
