@@ -353,7 +353,7 @@ def photoionize(df, laser, transition, threshold, prob=1.0):
     df = df.copy()
     tex = t_excite(df, laser, transition, threshold, prob)
     df.loc[tex.index, 'status'] = 'ion'
-    df.loc[tex.index, 'lifetime'] = tex
+    df.loc[tex.index, 'lifetime'] = tex - df.loc[tex.index, 'ti']
     return df
 
 def rydberg(df, laser, transition, threshold, ryd_life, prob=1.0):
@@ -388,5 +388,5 @@ def rydberg(df, laser, transition, threshold, ryd_life, prob=1.0):
     idx = tex.index
     num = len(tex.index)
     df.loc[idx, 'status'] = 'Rydberg'
-    df.loc[idx, 'lifetime'] = tex + np.random.exponential(np.zeros(num) + ryd_life)
+    df.loc[idx, 'lifetime'] = tex  - df.loc[idx, 'ti'] + np.random.exponential(np.zeros(num) + ryd_life)
     return df
